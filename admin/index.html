@@ -4,598 +4,245 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lost Saints — Admin</title>
-
-  <!-- SUPABASE -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
+    *{box-sizing:border-box}
+    body{margin:0;background:#050505;color:#fff;font-family:Arial,Helvetica,sans-serif}
+    button,input,textarea,select{font:inherit}
+    .hidden{display:none!important}
+    #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .login-box{width:100%;max-width:420px;border:1px solid #292929;padding:32px;background:#0c0c0c}
+    .logo{font-size:28px;font-weight:900;letter-spacing:3px;margin-bottom:8px}
+    .subtitle{color:#888;margin-bottom:30px;font-size:14px}
+    label{display:block;font-size:12px;color:#aaa;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+    input,textarea,select{width:100%;background:#111;color:#fff;border:1px solid #333;padding:13px;outline:none;margin-bottom:18px;border-radius:0}
+    input:focus,textarea:focus,select:focus{border-color:#fff}
+    textarea{min-height:110px;resize:vertical}
+    button{border:0;cursor:pointer}
+    .primary-btn{width:100%;background:#fff;color:#000;padding:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+    .primary-btn:hover{background:#ddd}
+    .error{color:#ff5555;font-size:13px;margin-top:15px;line-height:1.5}
+    .success{color:#62ff91;font-size:13px;margin-top:15px}
+    #adminScreen{min-height:100vh}
+    header{height:72px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between;padding:0 25px;position:sticky;top:0;background:rgba(5,5,5,.96);z-index:20}
+    .admin-title{font-weight:900;letter-spacing:2px}
+    .logout-btn{background:transparent;color:#fff;border:1px solid #444;padding:9px 15px;text-transform:uppercase;font-size:11px;letter-spacing:1px}
+    main{max-width:1250px;margin:0 auto;padding:30px 20px 80px}
+    .top-row{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:30px}
+    h1{margin:0;font-size:28px}
+    .new-btn{background:#fff;color:#000;padding:12px 18px;font-weight:800}
+    .layout{display:grid;grid-template-columns:390px 1fr;gap:25px;align-items:start}
+    .panel{border:1px solid #242424;background:#0b0b0b;padding:22px}
+    .panel h2{font-size:16px;margin:0 0 22px;text-transform:uppercase;letter-spacing:1px}
+    .image-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+    .image-box{border:1px solid #292929;padding:10px}
+    .image-preview{width:100%;aspect-ratio:1;object-fit:cover;background:#151515;display:block;margin-bottom:8px}
+    .upload-label{display:block;border:1px solid #333;padding:9px;text-align:center;font-size:11px;cursor:pointer}
+    .upload-label:hover{border-color:#fff}
+    .upload-label input{display:none}
+    .stock-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .stock-item{display:grid;grid-template-columns:1fr 70px;gap:6px;align-items:center}
+    .stock-item span{font-size:11px;color:#aaa}
+    .stock-item input{margin:0;padding:9px}
+    .checkbox-row{display:flex;align-items:center;gap:10px;margin:5px 0 20px}
+    .checkbox-row input{width:auto;margin:0}
+    .checkbox-row label{margin:0}
+    .products-list{display:grid;gap:12px}
+    .product-card{border:1px solid #242424;padding:15px;display:grid;grid-template-columns:90px 1fr auto;gap:15px;align-items:center;background:#0b0b0b}
+    .product-card img{width:90px;height:90px;object-fit:cover;background:#151515}
+    .product-name{font-weight:800;margin-bottom:7px}
+    .product-info{color:#888;font-size:12px;line-height:1.7}
+    .product-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .small-btn{background:#161616;border:1px solid #333;color:#fff;padding:9px 12px;font-size:11px}
+    .small-btn:hover{border-color:#fff}
+    .delete-btn:hover{border-color:#ff5555;color:#ff5555}
+    .publish-btn{border-color:#62ff91;color:#62ff91}
+    .unpublish-btn{border-color:#ffb347;color:#ffb347}
+    .badge{display:inline-block;padding:4px 7px;font-size:9px;letter-spacing:1px;font-weight:800;margin-left:6px}
+    .badge-draft{background:#222;color:#aaa}
+    .badge-published{background:#12351e;color:#62ff91}
+    .empty{border:1px dashed #333;padding:35px;text-align:center;color:#777}
+    .loading{color:#888;padding:20px 0}
+    @media(max-width:850px){
+      .layout{grid-template-columns:1fr}
+      .top-row{align-items:flex-start}
     }
-
-    body {
-      margin: 0;
-      background: #050505;
-      color: #fff;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    button,
-    input,
-    textarea,
-    select {
-      font: inherit;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    /* LOGIN */
-
-    #loginScreen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .login-box {
-      width: 100%;
-      max-width: 420px;
-      border: 1px solid #292929;
-      padding: 32px;
-      background: #0c0c0c;
-    }
-
-    .logo {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      color: #888;
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
-
-    label {
-      display: block;
-      font-size: 12px;
-      color: #aaa;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      background: #111;
-      color: #fff;
-      border: 1px solid #333;
-      padding: 13px;
-      outline: none;
-      margin-bottom: 18px;
-      border-radius: 0;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: #fff;
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    button {
-      border: 0;
-      cursor: pointer;
-    }
-
-    .primary-btn {
-      width: 100%;
-      background: #fff;
-      color: #000;
-      padding: 14px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .primary-btn:hover {
-      background: #ddd;
-    }
-
-    .error {
-      color: #ff5555;
-      font-size: 13px;
-      margin-top: 15px;
-      line-height: 1.5;
-    }
-
-    .success {
-      color: #62ff91;
-      font-size: 13px;
-      margin-top: 15px;
-    }
-
-    /* ADMIN */
-
-    #adminScreen {
-      min-height: 100vh;
-    }
-
-    header {
-      height: 72px;
-      border-bottom: 1px solid #222;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 25px;
-      position: sticky;
-      top: 0;
-      background: rgba(5,5,5,.96);
-      z-index: 20;
-    }
-
-    .admin-title {
-      font-weight: 900;
-      letter-spacing: 2px;
-    }
-
-    .logout-btn {
-      background: transparent;
-      color: #fff;
-      border: 1px solid #444;
-      padding: 9px 15px;
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 1px;
-    }
-
-    .logout-btn:hover {
-      border-color: #fff;
-    }
-
-    main {
-      max-width: 1250px;
-      margin: 0 auto;
-      padding: 30px 20px 80px;
-    }
-
-    .top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 28px;
-    }
-
-    .new-btn {
-      background: #fff;
-      color: #000;
-      padding: 12px 18px;
-      font-weight: 800;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 390px 1fr;
-      gap: 25px;
-      align-items: start;
-    }
-
-    .panel {
-      border: 1px solid #242424;
-      background: #0b0b0b;
-      padding: 22px;
-    }
-
-    .panel h2 {
-      font-size: 16px;
-      margin: 0 0 22px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .image-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .image-box {
-      border: 1px solid #292929;
-      padding: 10px;
-    }
-
-    .image-preview {
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      background: #151515;
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .upload-label {
-      display: block;
-      border: 1px solid #333;
-      padding: 9px;
-      text-align: center;
-      font-size: 11px;
-      cursor: pointer;
-    }
-
-    .upload-label:hover {
-      border-color: #fff;
-    }
-
-    .upload-label input {
-      display: none;
-    }
-
-    .stock-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .stock-item {
-      display: grid;
-      grid-template-columns: 1fr 70px;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .stock-item span {
-      font-size: 11px;
-      color: #aaa;
-    }
-
-    .stock-item input {
-      margin: 0;
-      padding: 9px;
-    }
-
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 5px 0 20px;
-    }
-
-    .checkbox-row input {
-      width: auto;
-      margin: 0;
-    }
-
-    .checkbox-row label {
-      margin: 0;
-    }
-
-    .products-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .product-card {
-      border: 1px solid #242424;
-      padding: 15px;
-      display: grid;
-      grid-template-columns: 90px 1fr auto;
-      gap: 15px;
-      align-items: center;
-      background: #0b0b0b;
-    }
-
-    .product-card img {
-      width: 90px;
-      height: 90px;
-      object-fit: cover;
-      background: #151515;
-    }
-
-    .product-name {
-      font-weight: 800;
-      margin-bottom: 7px;
-    }
-
-    .product-info {
-      color: #888;
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .product-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .small-btn {
-      background: #161616;
-      border: 1px solid #333;
-      color: #fff;
-      padding: 9px 12px;
-      font-size: 11px;
-    }
-
-    .small-btn:hover {
-      border-color: #fff;
-    }
-
-    .delete-btn:hover {
-      border-color: #ff5555;
-      color: #ff5555;
-    }
-
-    .empty {
-      border: 1px dashed #333;
-      padding: 35px;
-      text-align: center;
-      color: #777;
-    }
-
-    .loading {
-      color: #888;
-      padding: 20px 0;
-    }
-
-    @media (max-width: 850px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .top-row {
-        align-items: flex-start;
-      }
-    }
-
-    @media (max-width: 600px) {
-      header {
-        padding: 0 15px;
-      }
-
-      main {
-        padding: 20px 12px 60px;
-      }
-
-      .panel {
-        padding: 15px;
-      }
-
-      .product-card {
-        grid-template-columns: 65px 1fr;
-      }
-
-      .product-card img {
-        width: 65px;
-        height: 65px;
-      }
-
-      .product-actions {
-        grid-column: 1 / -1;
-      }
-
-      .product-actions button {
-        flex: 1;
-      }
+    @media(max-width:600px){
+      header{padding:0 15px}
+      main{padding:20px 12px 60px}
+      .panel{padding:15px}
+      .product-card{grid-template-columns:65px 1fr}
+      .product-card img{width:65px;height:65px}
+      .product-actions{grid-column:1/-1}
+      .product-actions button{flex:1}
     }
   </style>
 </head>
 
 <body>
 
-  <!-- LOGIN -->
-  <section id="loginScreen">
-    <div class="login-box">
-      <div class="logo">LOST SAINTS</div>
-      <div class="subtitle">ADMIN PANEL</div>
+<section id="loginScreen">
+  <div class="login-box">
+    <div class="logo">LOST SAINTS</div>
+    <div class="subtitle">ADMIN PANEL</div>
 
-      <form id="loginForm">
-        <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          autocomplete="email"
-          required
-          placeholder="admin@email.com"
-        >
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required placeholder="admin@email.com">
 
-        <label for="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          autocomplete="current-password"
-          required
-          placeholder="••••••••"
-        >
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required placeholder="••••••••">
 
-        <button class="primary-btn" type="submit">
-          Login
-        </button>
+      <button class="primary-btn" type="submit">Login</button>
+      <div id="loginError" class="error"></div>
+    </form>
+  </div>
+</section>
 
-        <div id="loginError" class="error"></div>
-      </form>
+<section id="adminScreen" class="hidden">
+
+  <header>
+    <div class="admin-title">LOST SAINTS / ADMIN</div>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </header>
+
+  <main>
+
+    <div class="top-row">
+      <h1>Products</h1>
+      <button id="newProductBtn" class="new-btn">+ New Product</button>
     </div>
-  </section>
 
+    <div class="layout">
 
-  <!-- ADMIN -->
-  <section id="adminScreen" class="hidden">
+      <div class="panel">
 
-    <header>
-      <div class="admin-title">LOST SAINTS / ADMIN</div>
-      <button id="logoutBtn" class="logout-btn">
-        Logout
-      </button>
-    </header>
+        <h2 id="formTitle">New Product</h2>
 
-    <main>
+        <form id="productForm">
 
-      <div class="top-row">
-        <div>
-          <h1>Products</h1>
-        </div>
+          <label for="productName">Product name</label>
+          <input id="productName" type="text" required>
 
-        <button id="newProductBtn" class="new-btn">
-          + New Product
-        </button>
-      </div>
+          <label for="productPrice">Price (€)</label>
+          <input id="productPrice" type="number" min="0" step="0.01" required>
 
-      <div class="layout">
+          <label for="productCategory">Category</label>
+          <select id="productCategory">
+            <option value="tops">Tops</option>
+            <option value="bottoms">Bottoms</option>
+            <option value="accessories">Accessories</option>
+            <option value="sets">Sets</option>
+          </select>
 
-        <!-- EDITOR -->
-        <div class="panel">
+          <label for="productDrop">Drop</label>
+          <input id="productDrop" type="text" value="Available now">
 
-          <h2 id="formTitle">New Product</h2>
+          <label for="productDescription">Description</label>
+          <textarea id="productDescription"></textarea>
 
-          <form id="productForm">
-
-            <label for="productName">Product name</label>
-            <input id="productName" type="text" required>
-
-            <label for="productPrice">Price (€)</label>
-            <input id="productPrice" type="number" min="0" step="0.01" required>
-
-            <label for="productCategory">Category</label>
-            <select id="productCategory">
-              <option value="tops">Tops</option>
-              <option value="bottoms">Bottoms</option>
-              <option value="accessories">Accessories</option>
-              <option value="sets">Sets</option>
-            </select>
-
-            <label for="productDrop">Drop</label>
-            <input id="productDrop" type="text" value="Available now">
-
-            <label for="productDescription">Description</label>
-            <textarea id="productDescription"></textarea>
-
-            <div class="checkbox-row">
-              <input id="productAvailable" type="checkbox" checked>
-              <label for="productAvailable">Product available</label>
-            </div>
-
-            <div class="image-grid">
-
-              <div class="image-box">
-                <img
-                  id="frontPreview"
-                  class="image-preview"
-                  alt="Front preview"
-                >
-
-                <label class="upload-label">
-                  Upload front
-                  <input id="frontImage" type="file" accept="image/*">
-                </label>
-              </div>
-
-              <div class="image-box">
-                <img
-                  id="backPreview"
-                  class="image-preview"
-                  alt="Back preview"
-                >
-
-                <label class="upload-label">
-                  Upload back
-                  <input id="backImage" type="file" accept="image/*">
-                </label>
-              </div>
-
-            </div>
-
-            <label>Stock by size</label>
-
-            <div class="stock-grid">
-
-              <div class="stock-item">
-                <span>XXS</span>
-                <input data-size="XXSMALL" type="number" min="0" value="0">
-              </div>
-
-              <div class="stock-item">
-                <span>XS</span>
-                <input data-size="XSMALL" type="number" min="0" value="0">
-              </div>
-
-              <div class="stock-item">
-                <span>S</span>
-                <input data-size="SMALL" type="number" min="0" value="0">
-              </div>
-
-              <div class="stock-item">
-                <span>M</span>
-                <input data-size="MEDIUM" type="number" min="0" value="0">
-              </div>
-
-              <div class="stock-item">
-                <span>L</span>
-                <input data-size="LARGE" type="number" min="0" value="0">
-              </div>
-
-              <div class="stock-item">
-                <span>XL</span>
-                <input data-size="XLARGE" type="number" min="0" value="0">
-              </div>
-
-              <div class="stock-item">
-                <span>XXL</span>
-                <input data-size="XXLARGE" type="number" min="0" value="0">
-              </div>
-
-            </div>
-
-            <br>
-
-            <button class="primary-btn" type="submit">
-              Save Product
-            </button>
-
-            <div id="formMessage"></div>
-
-          </form>
-
-        </div>
-
-
-        <!-- PRODUCTS -->
-        <div class="panel">
-
-          <h2>Current Products</h2>
-
-          <div id="productsList" class="products-list">
-            <div class="loading">Loading products...</div>
+          <div class="checkbox-row">
+            <input id="productAvailable" type="checkbox" checked>
+            <label for="productAvailable">Product available</label>
           </div>
 
+          <div class="checkbox-row">
+            <input id="productPublished" type="checkbox">
+            <label for="productPublished">Publish product on store</label>
+          </div>
+
+          <div class="image-grid">
+
+            <div class="image-box">
+              <img id="frontPreview" class="image-preview" alt="Front preview">
+
+              <label class="upload-label">
+                Upload front
+                <input id="frontImage" type="file" accept="image/*">
+              </label>
+            </div>
+
+            <div class="image-box">
+              <img id="backPreview" class="image-preview" alt="Back preview">
+
+              <label class="upload-label">
+                Upload back
+                <input id="backImage" type="file" accept="image/*">
+              </label>
+            </div>
+
+          </div>
+
+          <label>Stock by size</label>
+
+          <div class="stock-grid">
+
+            <div class="stock-item">
+              <span>XXS</span>
+              <input data-size="XXSMALL" type="number" min="0" value="0">
+            </div>
+
+            <div class="stock-item">
+              <span>XS</span>
+              <input data-size="XSMALL" type="number" min="0" value="0">
+            </div>
+
+            <div class="stock-item">
+              <span>S</span>
+              <input data-size="SMALL" type="number" min="0" value="0">
+            </div>
+
+            <div class="stock-item">
+              <span>M</span>
+              <input data-size="MEDIUM" type="number" min="0" value="0">
+            </div>
+
+            <div class="stock-item">
+              <span>L</span>
+              <input data-size="LARGE" type="number" min="0" value="0">
+            </div>
+
+            <div class="stock-item">
+              <span>XL</span>
+              <input data-size="XLARGE" type="number" min="0" value="0">
+            </div>
+
+            <div class="stock-item">
+              <span>XXL</span>
+              <input data-size="XXLARGE" type="number" min="0" value="0">
+            </div>
+
+          </div>
+
+          <br>
+
+          <button class="primary-btn" type="submit">
+            Save Product
+          </button>
+
+          <div id="formMessage"></div>
+
+        </form>
+
+      </div>
+
+      <div class="panel">
+
+        <h2>Current Products</h2>
+
+        <div id="productsList" class="products-list">
+          <div class="loading">Loading products...</div>
         </div>
 
       </div>
 
-    </main>
-  </section>
+    </div>
 
+  </main>
+</section>
 
 <script>
-/* =========================================================
-   SUPABASE CONFIG
-   ========================================================= */
 
 const SUPABASE_URL =
   "https://lvppsjgohaefczbmzdlm.supabase.co";
@@ -609,18 +256,8 @@ const supabaseClient =
     SUPABASE_KEY
   );
 
-
-/* =========================================================
-   STATE
-   ========================================================= */
-
 let editingProductId = null;
 let products = [];
-
-
-/* =========================================================
-   ELEMENTS
-   ========================================================= */
 
 const loginScreen =
   document.getElementById("loginScreen");
@@ -665,9 +302,47 @@ const backPreview =
   document.getElementById("backPreview");
 
 
-/* =========================================================
-   LOGIN
-   ========================================================= */
+function placeholderImage() {
+  return "data:image/svg+xml;charset=UTF-8," +
+    encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
+        <rect width="500" height="500" fill="#151515"/>
+        <text x="250" y="250" fill="#555" font-size="22"
+          text-anchor="middle" dominant-baseline="middle">
+          LOST SAINTS
+        </text>
+      </svg>
+    `);
+}
+
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
+}
+
+
+function showLogin() {
+  loginScreen.classList.remove("hidden");
+  adminScreen.classList.add("hidden");
+}
+
+
+function showAdmin() {
+  loginScreen.classList.add("hidden");
+  adminScreen.classList.remove("hidden");
+  loadProducts();
+}
+
 
 loginForm.addEventListener("submit", async function(event) {
 
@@ -681,25 +356,29 @@ loginForm.addEventListener("submit", async function(event) {
   const password =
     document.getElementById("password").value;
 
-  const { data, error } =
+  const {
+    data,
+    error
+  } =
     await supabaseClient.auth.signInWithPassword({
       email,
       password
     });
 
   if (error) {
-    loginError.textContent =
-      error.message;
+    loginError.textContent = error.message;
     return;
   }
 
   if (!data.user) {
-    loginError.textContent =
-      "Login failed.";
+    loginError.textContent = "Login failed.";
     return;
   }
 
-  const { data: adminRow, error: adminError } =
+  const {
+    data: adminRow,
+    error: adminError
+  } =
     await supabaseClient
       .from("admin_users")
       .select("user_id")
@@ -708,19 +387,13 @@ loginForm.addEventListener("submit", async function(event) {
 
   if (adminError) {
     await supabaseClient.auth.signOut();
-
-    loginError.textContent =
-      adminError.message;
-
+    loginError.textContent = adminError.message;
     return;
   }
 
   if (!adminRow) {
     await supabaseClient.auth.signOut();
-
-    loginError.textContent =
-      "This account is not an admin.";
-
+    loginError.textContent = "This account is not an admin.";
     return;
   }
 
@@ -729,17 +402,14 @@ loginForm.addEventListener("submit", async function(event) {
 });
 
 
-/* =========================================================
-   AUTH CHECK
-   ========================================================= */
-
 async function checkSession() {
 
   const {
     data: {
       session
     }
-  } = await supabaseClient.auth.getSession();
+  } =
+    await supabaseClient.auth.getSession();
 
   if (!session) {
     showLogin();
@@ -749,11 +419,12 @@ async function checkSession() {
   const {
     data: adminRow,
     error
-  } = await supabaseClient
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id", session.user.id)
-    .maybeSingle();
+  } =
+    await supabaseClient
+      .from("admin_users")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
 
   if (error || !adminRow) {
     await supabaseClient.auth.signOut();
@@ -765,66 +436,31 @@ async function checkSession() {
 }
 
 
-/* =========================================================
-   SHOW / HIDE
-   ========================================================= */
-
-function showLogin() {
-
-  loginScreen.classList.remove("hidden");
-  adminScreen.classList.add("hidden");
-
-}
-
-function showAdmin() {
-
-  loginScreen.classList.add("hidden");
-  adminScreen.classList.remove("hidden");
-
-  loadProducts();
-
-}
-
-
-/* =========================================================
-   LOGOUT
-   ========================================================= */
-
 logoutBtn.addEventListener("click", async function() {
-
   await supabaseClient.auth.signOut();
-
   showLogin();
-
 });
 
 
-/* =========================================================
-   NEW PRODUCT
-   ========================================================= */
-
-newProductBtn.addEventListener(
-  "click",
-  resetForm
-);
+newProductBtn.addEventListener("click", resetForm);
 
 
 function resetForm() {
 
   editingProductId = null;
 
-  formTitle.textContent =
-    "New Product";
+  formTitle.textContent = "New Product";
 
   productForm.reset();
 
-  document.getElementById(
-    "productDrop"
-  ).value = "Available now";
+  document.getElementById("productDrop").value =
+    "Available now";
 
-  document.getElementById(
-    "productAvailable"
-  ).checked = true;
+  document.getElementById("productAvailable").checked =
+    true;
+
+  document.getElementById("productPublished").checked =
+    false;
 
   document
     .querySelectorAll(".stock-item input")
@@ -832,86 +468,39 @@ function resetForm() {
       input.value = 0;
     });
 
-  frontPreview.src =
-    placeholderImage();
-
-  backPreview.src =
-    placeholderImage();
+  frontPreview.src = placeholderImage();
+  backPreview.src = placeholderImage();
 
   frontImage.value = "";
   backImage.value = "";
 
   formMessage.textContent = "";
-
 }
 
 
-/* =========================================================
-   PLACEHOLDER
-   ========================================================= */
+frontImage.addEventListener("change", function() {
 
-function placeholderImage() {
+  const file = frontImage.files[0];
 
-  return "data:image/svg+xml;charset=UTF-8," +
-    encodeURIComponent(`
-      <svg xmlns="http://www.w3.org/2000/svg"
-           width="500"
-           height="500"
-           viewBox="0 0 500 500">
-        <rect width="500" height="500" fill="#151515"/>
-        <text x="250"
-              y="250"
-              fill="#555"
-              font-size="22"
-              text-anchor="middle"
-              dominant-baseline="middle">
-          LOST SAINTS
-        </text>
-      </svg>
-    `);
+  if (!file) return;
 
-}
+  frontPreview.src =
+    URL.createObjectURL(file);
+
+});
 
 
-/* =========================================================
-   IMAGE PREVIEWS
-   ========================================================= */
+backImage.addEventListener("change", function() {
 
-frontImage.addEventListener(
-  "change",
-  function() {
+  const file = backImage.files[0];
 
-    const file =
-      frontImage.files[0];
+  if (!file) return;
 
-    if (!file) return;
+  backPreview.src =
+    URL.createObjectURL(file);
 
-    frontPreview.src =
-      URL.createObjectURL(file);
+});
 
-  }
-);
-
-
-backImage.addEventListener(
-  "change",
-  function() {
-
-    const file =
-      backImage.files[0];
-
-    if (!file) return;
-
-    backPreview.src =
-      URL.createObjectURL(file);
-
-  }
-);
-
-
-/* =========================================================
-   LOAD PRODUCTS
-   ========================================================= */
 
 async function loadProducts() {
 
@@ -921,39 +510,31 @@ async function loadProducts() {
   const {
     data,
     error
-  } = await supabaseClient
-    .from("products")
-    .select("*")
-    .order("created_at", {
-      ascending: false
-    });
+  } =
+    await supabaseClient
+      .from("products")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
 
   if (error) {
-
     productsList.innerHTML =
       `<div class="error">${escapeHtml(error.message)}</div>`;
-
     return;
   }
 
   products = data || [];
 
   renderProducts();
-
 }
 
-
-/* =========================================================
-   RENDER PRODUCTS
-   ========================================================= */
 
 function renderProducts() {
 
   if (!products.length) {
-
     productsList.innerHTML =
       '<div class="empty">No products yet.</div>';
-
     return;
   }
 
@@ -971,10 +552,13 @@ function renderProducts() {
       const stockTotal =
         Object.values(stock)
           .reduce(
-            (sum, value) =>
+            (sum,value) =>
               sum + Number(value || 0),
             0
           );
+
+      const published =
+        product.published === true;
 
       return `
         <div class="product-card">
@@ -988,6 +572,13 @@ function renderProducts() {
 
             <div class="product-name">
               ${escapeHtml(product.name)}
+
+              ${
+                published
+                  ? '<span class="badge badge-published">PUBLISHED</span>'
+                  : '<span class="badge badge-draft">DRAFT</span>'
+              }
+
             </div>
 
             <div class="product-info">
@@ -1009,6 +600,22 @@ function renderProducts() {
             </button>
 
             <button
+              class="small-btn ${
+                published
+                  ? "unpublish-btn"
+                  : "publish-btn"
+              }"
+              onclick="togglePublish(${product.id})">
+
+              ${
+                published
+                  ? "Unpublish"
+                  : "Publish"
+              }
+
+            </button>
+
+            <button
               class="small-btn delete-btn"
               onclick="deleteProduct(${product.id})">
               Delete
@@ -1024,10 +631,6 @@ function renderProducts() {
 }
 
 
-/* =========================================================
-   EDIT PRODUCT
-   ========================================================= */
-
 window.editProduct = function(id) {
 
   const product =
@@ -1037,53 +640,38 @@ window.editProduct = function(id) {
 
   if (!product) return;
 
-  editingProductId =
-    product.id;
+  editingProductId = product.id;
 
-  formTitle.textContent =
-    "Edit Product";
+  formTitle.textContent = "Edit Product";
 
-  document.getElementById(
-    "productName"
-  ).value =
+  document.getElementById("productName").value =
     product.name || "";
 
-  document.getElementById(
-    "productPrice"
-  ).value =
+  document.getElementById("productPrice").value =
     product.price || 0;
 
-  document.getElementById(
-    "productCategory"
-  ).value =
+  document.getElementById("productCategory").value =
     product.category || "tops";
 
-  document.getElementById(
-    "productDrop"
-  ).value =
+  document.getElementById("productDrop").value =
     product.drop || "Available now";
 
-  document.getElementById(
-    "productDescription"
-  ).value =
+  document.getElementById("productDescription").value =
     product.description || "";
 
-  document.getElementById(
-    "productAvailable"
-  ).checked =
+  document.getElementById("productAvailable").checked =
     product.available !== false;
 
-  setStockForm(
-    product.stock || {}
-  );
+  document.getElementById("productPublished").checked =
+    product.published === true;
+
+  setStockForm(product.stock || {});
 
   frontPreview.src =
-    product.front ||
-    placeholderImage();
+    product.front || placeholderImage();
 
   backPreview.src =
-    product.back ||
-    placeholderImage();
+    product.back || placeholderImage();
 
   frontImage.value = "";
   backImage.value = "";
@@ -1091,16 +679,12 @@ window.editProduct = function(id) {
   formMessage.textContent = "";
 
   window.scrollTo({
-    top: 0,
-    behavior: "smooth"
+    top:0,
+    behavior:"smooth"
   });
 
 };
 
-
-/* =========================================================
-   STOCK
-   ========================================================= */
 
 function getStockFromForm() {
 
@@ -1110,12 +694,11 @@ function getStockFromForm() {
     .querySelectorAll(".stock-item input")
     .forEach(input => {
 
-      stock[
-        input.dataset.size
-      ] = Math.max(
-        0,
-        Number(input.value || 0)
-      );
+      stock[input.dataset.size] =
+        Math.max(
+          0,
+          Number(input.value || 0)
+        );
 
     });
 
@@ -1139,15 +722,9 @@ function setStockForm(stock) {
 }
 
 
-/* =========================================================
-   UPLOAD IMAGE
-   ========================================================= */
-
 async function uploadImage(file) {
 
-  if (!file) {
-    return null;
-  }
+  if (!file) return null;
 
   const extension =
     file.name
@@ -1163,37 +740,32 @@ async function uploadImage(file) {
 
   const {
     error
-  } = await supabaseClient
-    .storage
-    .from("product-images")
-    .upload(
-      filePath,
-      file,
-      {
-        upsert: false,
-        contentType: file.type
-      }
-    );
+  } =
+    await supabaseClient
+      .storage
+      .from("product-images")
+      .upload(
+        filePath,
+        file,
+        {
+          upsert:false,
+          contentType:file.type
+        }
+      );
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
   const {
     data
-  } = supabaseClient
-    .storage
-    .from("product-images")
-    .getPublicUrl(filePath);
+  } =
+    supabaseClient
+      .storage
+      .from("product-images")
+      .getPublicUrl(filePath);
 
   return data.publicUrl;
-
 }
 
-
-/* =========================================================
-   SAVE PRODUCT
-   ========================================================= */
 
 productForm.addEventListener(
   "submit",
@@ -1202,42 +774,32 @@ productForm.addEventListener(
     event.preventDefault();
 
     formMessage.className = "";
-    formMessage.textContent =
-      "Saving...";
+    formMessage.textContent = "Saving...";
 
     try {
 
       const name =
-        document.getElementById(
-          "productName"
-        ).value.trim();
+        document.getElementById("productName").value.trim();
 
       const price =
         Number(
-          document.getElementById(
-            "productPrice"
-          ).value
+          document.getElementById("productPrice").value
         );
 
       const category =
-        document.getElementById(
-          "productCategory"
-        ).value;
+        document.getElementById("productCategory").value;
 
       const drop =
-        document.getElementById(
-          "productDrop"
-        ).value.trim();
+        document.getElementById("productDrop").value.trim();
 
       const description =
-        document.getElementById(
-          "productDescription"
-        ).value.trim();
+        document.getElementById("productDescription").value.trim();
 
       const available =
-        document.getElementById(
-          "productAvailable"
-        ).checked;
+        document.getElementById("productAvailable").checked;
+
+      const published =
+        document.getElementById("productPublished").checked;
 
       const stock =
         getStockFromForm();
@@ -1246,21 +808,13 @@ productForm.addEventListener(
       let backUrl = null;
 
       if (frontImage.files[0]) {
-
         frontUrl =
-          await uploadImage(
-            frontImage.files[0]
-          );
-
+          await uploadImage(frontImage.files[0]);
       }
 
       if (backImage.files[0]) {
-
         backUrl =
-          await uploadImage(
-            backImage.files[0]
-          );
-
+          await uploadImage(backImage.files[0]);
       }
 
       if (editingProductId) {
@@ -1279,92 +833,80 @@ productForm.addEventListener(
           drop,
           description,
           available,
+          published,
           stock,
-          sizes: Object.keys(stock)
+          sizes:Object.keys(stock)
         };
 
-        if (frontUrl) {
-          updateData.front =
-            frontUrl;
-        } else if (existing?.front) {
-          updateData.front =
-            existing.front;
-        }
+        updateData.front =
+          frontUrl ||
+          existing?.front ||
+          null;
 
-        if (backUrl) {
-          updateData.back =
-            backUrl;
-        } else if (existing?.back) {
-          updateData.back =
-            existing.back;
-        }
+        updateData.back =
+          backUrl ||
+          existing?.back ||
+          null;
 
         const {
           error
-        } = await supabaseClient
-          .from("products")
-          .update(updateData)
-          .eq(
-            "id",
-            editingProductId
-          );
+        } =
+          await supabaseClient
+            .from("products")
+            .update(updateData)
+            .eq("id", editingProductId);
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
-        formMessage.className =
-          "success";
-
+        formMessage.className = "success";
         formMessage.textContent =
-          "Product updated successfully.";
+          published
+            ? "Product published successfully."
+            : "Product saved as draft.";
 
       } else {
 
-        const insertData = {
-          name,
-          price,
-          category,
-          drop,
-          description,
-          available,
-          stock,
-          sizes: Object.keys(stock),
-          front: frontUrl,
-          back: backUrl
-        };
-
         const {
           error
-        } = await supabaseClient
-          .from("products")
-          .insert(insertData);
+        } =
+          await supabaseClient
+            .from("products")
+            .insert({
+              name,
+              price,
+              category,
+              drop,
+              description,
+              available,
+              published,
+              stock,
+              sizes:Object.keys(stock),
+              front:frontUrl,
+              back:backUrl
+            });
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
-        formMessage.className =
-          "success";
-
+        formMessage.className = "success";
         formMessage.textContent =
-          "Product created successfully.";
-
+          published
+            ? "Product published successfully."
+            : "Product saved as draft.";
       }
 
       await loadProducts();
 
       if (!editingProductId) {
-        resetForm();
+        setTimeout(() => {
+          resetForm();
+        }, 700);
       }
 
-    } catch (error) {
+    } catch(error) {
 
       console.error(error);
 
-      formMessage.className =
-        "error";
-
+      formMessage.className = "error";
       formMessage.textContent =
         error.message ||
         "Something went wrong.";
@@ -1375,17 +917,44 @@ productForm.addEventListener(
 );
 
 
-/* =========================================================
-   DELETE PRODUCT
-   ========================================================= */
+window.togglePublish = async function(id) {
+
+  const product =
+    products.find(
+      item =>
+        Number(item.id) === Number(id)
+    );
+
+  if (!product) return;
+
+  const newStatus =
+    product.published !== true;
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("products")
+      .update({
+        published:newStatus
+      })
+      .eq("id",id);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  await loadProducts();
+};
+
 
 window.deleteProduct = async function(id) {
 
   const product =
     products.find(
       item =>
-        Number(item.id) ===
-        Number(id)
+        Number(item.id) === Number(id)
     );
 
   if (!product) return;
@@ -1399,63 +968,30 @@ window.deleteProduct = async function(id) {
 
   const {
     error
-  } = await supabaseClient
-    .from("products")
-    .delete()
-    .eq("id", id);
+  } =
+    await supabaseClient
+      .from("products")
+      .delete()
+      .eq("id",id);
 
   if (error) {
-
     alert(error.message);
-
     return;
   }
 
   if (
     editingProductId &&
-    Number(editingProductId) ===
-    Number(id)
+    Number(editingProductId) === Number(id)
   ) {
     resetForm();
   }
 
   await loadProducts();
-
 };
 
 
-/* =========================================================
-   SECURITY / HTML ESCAPING
-   ========================================================= */
-
-function escapeHtml(value) {
-
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-}
-
-
-function escapeAttribute(value) {
-
-  return escapeHtml(value);
-
-}
-
-
-/* =========================================================
-   START
-   ========================================================= */
-
-frontPreview.src =
-  placeholderImage();
-
-backPreview.src =
-  placeholderImage();
+frontPreview.src = placeholderImage();
+backPreview.src = placeholderImage();
 
 checkSession();
 
