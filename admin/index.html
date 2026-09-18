@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Lost Saints — Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: #050505;
+    }
+
+    body {
+      margin: 0;
+      background: #050505;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* LOGIN */
+
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 430px;
+      border: 1px solid #292929;
+      background: #0b0b0b;
+      padding: 30px;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+    }
+
+    .admin-label {
+      margin-top: 6px;
+      margin-bottom: 28px;
+      color: #777;
+      font-size: 11px;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+
+    .field {
+      margin-bottom: 17px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: #999;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid #303030;
+      outline: none;
+      background: #050505;
+      color: white;
+      padding: 13px;
+      border-radius: 0;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #777;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .btn {
+      border: 1px solid #fff;
+      background: #fff;
+      color: #000;
+      padding: 12px 17px;
+      font-weight: 800;
+      border-radius: 0;
+    }
+
+    .btn:hover {
+      opacity: .85;
+    }
+
+    .btn-dark {
+      border-color: #333;
+      background: #111;
+      color: #fff;
+    }
+
+    .btn-danger {
+      border-color: #555;
+      background: #050505;
+      color: #fff;
+    }
+
+    .message {
+      display: none;
+      border: 1px solid #333;
+      padding: 12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      border-color: #8b3030;
+      color: #ffb2b2;
+    }
+
+    /* HEADER */
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #222;
+      margin-bottom: 25px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* PANELS */
+
+    .panel {
+      background: #0a0a0a;
+      border: 1px solid #242424;
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      margin: 0 0 20px;
+    }
+
+    /* FORM */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-row input {
+      width: auto;
+    }
+
+    .stock-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .stock-item label {
+      font-size: 9px;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .file-box {
+      border: 1px dashed #444;
+      padding: 15px;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .preview-grid img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #151515;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* PRODUCTS */
+
+    .product-row {
+      display: grid;
+      grid-template-columns: 85px 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 15px 0;
+      border-top: 1px solid #222;
+    }
+
+    .product-image {
+      width: 85px;
+      height: 100px;
+      object-fit: cover;
+      background: #151515;
+    }
+
+    .product-info h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .product-meta {
+      color: #777;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .product-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 1px;
+      padding: 4px 7px;
+      border: 1px solid #333;
+      margin-top: 5px;
+    }
+
+    .status.sold {
+      color: #ff9a9a;
+      border-color: #713333;
+    }
+
+    .status.available {
+      color: #b8ffb8;
+      border-color: #356235;
+    }
+
+    .empty {
+      color: #777;
+      padding: 15px 0;
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        padding: 16px;
+      }
+
+      .admin-header {
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+
+      .stock-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .image-grid,
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .product-row {
+        grid-template-columns: 65px 1fr;
+      }
+
+      .product-image {
+        width: 65px;
+        height: 80px;
+      }
+
+      .product-buttons {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+      }
+
+      .header-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+
+  <section id="loginScreen">
+    <div class="login-box">
+
+      <div class="logo">LOST SAINTS</div>
+      <div class="admin-label">ADMIN PANEL</div>
+
+      <div id="loginMessage" class="message"></div>
+
+      <div class="field">
+        <label>Email</label>
+        <input
+          id="loginEmail"
+          type="email"
+          autocomplete="username"
+          placeholder="Admin email"
+        >
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input
+          id="loginPassword"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Password"
+        >
+      </div>
+
+      <button id="loginButton" class="btn">
+        LOGIN
+      </button>
+
+    </div>
+  </section>
+
+
+  <!-- ADMIN -->
+
+  <main id="adminApp" class="page hidden">
+
+    <header class="admin-header">
+
+      <div>
+        <div class="logo">LOST SAINTS</div>
+        <div class="admin-label">STORE ADMIN</div>
+      </div>
+
+      <div class="header-actions">
+        <button id="newProductButton" class="btn">
+          + NEW PRODUCT
+        </button>
+
+        <button id="logoutButton" class="btn btn-dark">
+          LOG OUT
+        </button>
+      </div>
+
+    </header>
+
+
+    <div id="adminMessage" class="message"></div>
+
+
+    <!-- PRODUCT FORM -->
+
+    <section class="panel">
+
+      <h2 id="formTitle" class="panel-title">
+        New Product
+      </h2>
+
+      <form id="productForm">
+
+        <input id="productId" type="hidden">
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label>Product name</label>
+            <input id="productName" required>
+          </div>
+
+
+          <div class="field">
+            <label>Price (€)</label>
+            <input
+              id="productPrice"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+            >
+          </div>
+
+
+          <div class="field">
+
+            <label>Category</label>
+
+            <select id="productCategory">
+
+              <option value="tops">
+                Tops
+              </option>
+
+              <option value="bottoms">
+                Bottoms
+              </option>
+
+              <option value="outerwear">
+                Outerwear
+              </option>
+
+              <option value="accessories">
+                Accessories
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="field">
+            <label>Drop</label>
+            <input
+              id="productDrop"
+              value="Available now"
+            >
+          </div>
+
+
+          <div class="field full">
+
+            <label>Description</label>
+
+            <textarea id="productDescription"></textarea>
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              Sizes
+            </label>
+
+            <input
+              id="productSizes"
+              value="XXSMALL,XSMALL,SMALL,MEDIUM,LARGE,XLARGE,XXLARGE"
+            >
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              Stock per size
+            </label>
+
+            <div
+              id="stockGrid"
+              class="stock-grid"
+            ></div>
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              Product availability
+            </label>
+
+            <div class="checkbox-row">
+
+              <input
+                id="productAvailable"
+                type="checkbox"
+                checked
+              >
+
+              <span>
+                Product is available
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- IMAGES -->
+
+        <div style="margin-top:25px">
+
+          <h3 style="font-size:14px">
+            Product Images
+          </h3>
+
+          <div class="image-grid">
+
+            <div class="file-box">
+
+              <label>
+                Front image
+              </label>
+
+              <input
+                id="frontImage"
+                type="file"
+                accept="image/*"
+              >
+
+            </div>
+
+
+            <div class="file-box">
+
+              <label>
+                Back image
+              </label>
+
+              <input
+                id="backImage"
+                type="file"
+                accept="image/*"
+              >
+
+            </div>
+
+          </div>
+
+          <div
+            id="imagePreview"
+            class="preview-grid"
+          ></div>
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button
+            id="saveProductButton"
+            class="btn"
+            type="submit"
+          >
+            SAVE PRODUCT
+          </button>
+
+          <button
+            id="cancelButton"
+            class="btn btn-dark"
+            type="button"
+          >
+            CANCEL
+          </button>
+
+        </div>
+
+      </form>
+
+    </section>
+
+
+    <!-- PRODUCTS -->
+
+    <section class="panel">
+
+      <h2 class="panel-title">
+        Products
+      </h2>
+
+      <div id="productsList">
+        <div class="empty">
+          Loading products...
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+
+<script>
+
+  const SUPABASE_URL =
+    "https://lvppsjgohaefczbmzdlm.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable_f9W3McCrxK98_AeydqlFiQ_L1WHR7UV";
+
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+
+  let products = [];
+  let editingProduct = null;
+
+
+  const $ = id =>
+    document.getElementById(id);
+
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  function showMessage(
+    element,
+    text,
+    error = false
+  ) {
+
+    element.textContent = text;
+
+    element.classList.add("show");
+
+    element.classList.toggle(
+      "error",
+      error
+    );
+
+    setTimeout(() => {
+      element.classList.remove("show");
+    }, 4000);
+
+  }
+
+
+  async function checkAdmin(user) {
+
+    if (!user) {
+      return false;
+    }
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("admin_users")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+
+    if (error) {
+      console.error(error);
+      return false;
+    }
+
+
+    return !!data;
+
+  }
+
+
+  async function initialize() {
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      session &&
+      await checkAdmin(session.user)
+    ) {
+
+      openAdmin();
+
+      await loadProducts();
+
+    }
+
+  }
+
+
+  function openAdmin() {
+
+    $("loginScreen")
+      .classList.add("hidden");
+
+    $("adminApp")
+      .classList.remove("hidden");
+
+  }
+
+
+  function openLogin() {
+
+    $("adminApp")
+      .classList.add("hidden");
+
+    $("loginScreen")
+      .classList.remove("hidden");
+
+  }
+
+
+  $("loginButton").addEventListener(
+    "click",
+    async () => {
+
+      const email =
+        $("loginEmail")
+          .value
+          .trim();
+
+      const password =
+        $("loginPassword")
+          .value;
+
+
+      if (!email || !password) {
+
+        showMessage(
+          $("loginMessage"),
+          "Enter your email and password.",
+          true
+        );
+
+        return;
+
+      }
+
+
+      $("loginButton").disabled = true;
+
+      $("loginButton").textContent =
+        "LOGGING IN...";
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth
+          .signInWithPassword({
+            email,
+            password
+          });
+
+
+      if (error) {
+
+        showMessage(
+          $("loginMessage"),
+          error.message,
+          true
+        );
+
+        $("loginButton").disabled = false;
+
+        $("loginButton").textContent =
+          "LOGIN";
+
+        return;
+
+      }
+
+
+      const authorized =
+        await checkAdmin(data.user);
+
+
+      if (!authorized) {
+
+        await supabaseClient.auth.signOut();
+
+        showMessage(
+          $("loginMessage"),
+          "NOT AUTHORIZED.",
+          true
+        );
+
+        $("loginButton").disabled = false;
+
+        $("loginButton").textContent =
+          "LOGIN";
+
+        return;
+
+      }
+
+
+      $("loginButton").disabled = false;
+
+      $("loginButton").textContent =
+        "LOGIN";
+
+
+      openAdmin();
+
+      await loadProducts();
+
+    }
+  );
+
+
+  $("logoutButton").addEventListener(
+    "click",
+    async () => {
+
+      await supabaseClient.auth.signOut();
+
+      openLogin();
+
+    }
+  );
+
+
+  supabaseClient.auth.onAuthStateChange(
+    async (event) => {
+
+      if (event === "SIGNED_OUT") {
+        openLogin();
+      }
+
+    }
+  );
+
+
+  function getSizes() {
+
+    return $("productSizes")
+      .value
+      .split(",")
+      .map(size => size.trim())
+      .filter(Boolean);
+
+  }
+
+
+  function renderStockInputs(
+    existingStock = {}
+  ) {
+
+    const sizes =
+      getSizes();
+
+
+    $("stockGrid").innerHTML =
+      sizes.map(size => {
+
+        const value =
+          Number(
+            existingStock[size] || 0
+          );
+
+
+        return `
+          <div class="stock-item">
+
+            <label>
+              ${escapeHtml(size)}
+            </label>
+
+            <input
+              class="stock-input"
+              data-size="${escapeHtml(size)}"
+              type="number"
+              min="0"
+              value="${value}"
+            >
+
+          </div>
+        `;
+
+      }).join("");
+
+  }
+
+
+  function getStock() {
+
+    const stock = {};
+
+
+    document
+      .querySelectorAll(".stock-input")
+      .forEach(input => {
+
+        stock[input.dataset.size] =
+          Math.max(
+            0,
+            Number(input.value) || 0
+          );
+
+      });
+
+
+    return stock;
+
+  }
+
+
+  $("productSizes").addEventListener(
+    "input",
+    () => {
+
+      renderStockInputs(
+        editingProduct?.stock || {}
+      );
+
+    }
+  );
+
+
+  function previewImages() {
+
+    const images = [];
+
+
+    if (
+      $("frontImage").files &&
+      $("frontImage").files[0]
+    ) {
+
+      images.push(
+        URL.createObjectURL(
+          $("frontImage").files[0]
+        )
+      );
+
+    }
+
+
+    if (
+      $("backImage").files &&
+      $("backImage").files[0]
+    ) {
+
+      images.push(
+        URL.createObjectURL(
+          $("backImage").files[0]
+        )
+      );
+
+    }
+
+
+    if (!images.length) {
+
+      if (editingProduct) {
+
+        const existing = [];
+
+
+        if (editingProduct.front) {
+          existing.push(
+            editingProduct.front
+          );
+        }
+
+
+        if (editingProduct.back) {
+          existing.push(
+            editingProduct.back
+          );
+        }
+
+
+        $("imagePreview").innerHTML =
+          existing
+            .map(url =>
+              `<img src="${escapeHtml(url)}">`
+            )
+            .join("");
+
+      } else {
+
+        $("imagePreview").innerHTML = "";
+
+      }
+
+      return;
+
+    }
+
+
+    $("imagePreview").innerHTML =
+      images
+        .map(url =>
+          `<img src="${url}">`
+        )
+        .join("");
+
+  }
+
+
+  $("frontImage").addEventListener(
+    "change",
+    previewImages
+  );
+
+  $("backImage").addEventListener(
+    "change",
+    previewImages
+  );
+
+
+  function resetForm() {
+
+    editingProduct = null;
+
+    $("productForm").reset();
+
+    $("productId").value = "";
+
+    $("productDrop").value =
+      "Available now";
+
+    $("productSizes").value =
+      "XXSMALL,XSMALL,SMALL,MEDIUM,LARGE,XLARGE,XXLARGE";
+
+    $("productAvailable").checked =
+      true;
+
+    $("formTitle").textContent =
+      "New Product";
+
+    $("saveProductButton").textContent =
+      "SAVE PRODUCT";
+
+    $("frontImage").value = "";
+
+    $("backImage").value = "";
+
+    $("imagePreview").innerHTML = "";
+
+    renderStockInputs();
+
+  }
+
+
+  $("newProductButton").addEventListener(
+    "click",
+    () => {
+
+      resetForm();
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    }
+  );
+
+
+  $("cancelButton").addEventListener(
+    "click",
+    resetForm
+  );
+
+
+  async function uploadImage(
+    file,
+    productId,
+    side
+  ) {
+
+    if (!file) {
+      return null;
+    }
+
+
+    const safeName =
+      file.name
+        .toLowerCase()
+        .replace(
+          /[^a-z0-9._-]+/g,
+          "-"
+        );
+
+
+    const path =
+      `products/${productId}/${side}-${crypto.randomUUID()}-${safeName}`;
+
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .storage
+        .from("product-images")
+        .upload(
+          path,
+          file,
+          {
+            upsert: false,
+            contentType: file.type
+          }
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const {
+      data
+    } =
+      supabaseClient
+        .storage
+        .from("product-images")
+        .getPublicUrl(path);
+
+
+    return data.publicUrl;
+
+  }
+
+
+  $("productForm").addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      const wasEditing =
+        !!editingProduct;
+
+
+      $("saveProductButton").disabled =
+        true;
+
+      $("saveProductButton").textContent =
+        "SAVING...";
+
+
+      try {
+
+        const payload = {
+
+          name:
+            $("productName")
+              .value
+              .trim(),
+
+          price:
+            Number(
+              $("productPrice").value
+            ) || 0,
+
+          category:
+            $("productCategory")
+              .value,
+
+          drop:
+            $("productDrop")
+              .value
+              .trim() ||
+            "Available now",
+
+          description:
+            $("productDescription")
+              .value
+              .trim(),
+
+          sizes:
+            getSizes(),
+
+          stock:
+            getStock(),
+
+          available:
+            $("productAvailable")
+              .checked,
+
+          updated_at:
+            new Date().toISOString()
+
+        };
+
+
+        let savedProduct;
+
+
+        if (editingProduct) {
+
+          const {
+            data,
+            error
+          } =
+            await supabaseClient
+              .from("products")
+              .update(payload)
+              .eq(
+                "id",
+                editingProduct.id
+              )
+              .select()
+              .single();
+
+
+          if (error) {
+            throw error;
+          }
+
+
+          savedProduct = data;
+
+        } else {
+
+          const {
+            data,
+            error
+          } =
+            await supabaseClient
+              .from("products")
+              .insert(payload)
+              .select()
+              .single();
+
+
+          if (error) {
+            throw error;
+          }
+
+
+          savedProduct = data;
+
+        }
+
+
+        const frontUrl =
+          await uploadImage(
+            $("frontImage").files[0],
+            savedProduct.id,
+            "front"
+          );
+
+
+        const backUrl =
+          await uploadImage(
+            $("backImage").files[0],
+            savedProduct.id,
+            "back"
+          );
+
+
+        if (frontUrl || backUrl) {
+
+          const imageUpdate = {
+            updated_at:
+              new Date().toISOString()
+          };
+
+
+          if (frontUrl) {
+            imageUpdate.front =
+              frontUrl;
+          }
+
+
+          if (backUrl) {
+            imageUpdate.back =
+              backUrl;
+          }
+
+
+          const {
+            error
+          } =
+            await supabaseClient
+              .from("products")
+              .update(imageUpdate)
+              .eq(
+                "id",
+                savedProduct.id
+              );
+
+
+          if (error) {
+            throw error;
+          }
+
+        }
+
+
+        showMessage(
+          $("adminMessage"),
+          wasEditing
+            ? "Product updated successfully."
+            : "Product created successfully."
+        );
+
+
+        resetForm();
+
+        await loadProducts();
+
+      }
+
+      catch (error) {
+
+        console.error(error);
+
+        showMessage(
+          $("adminMessage"),
+          error.message ||
+            "Something went wrong.",
+          true
+        );
+
+      }
+
+
+      $("saveProductButton").disabled =
+        false;
+
+      $("saveProductButton").textContent =
+        "SAVE PRODUCT";
+
+    }
+  );
+
+
+  async function loadProducts() {
+
+    $("productsList").innerHTML =
+      `<div class="empty">
+        Loading products...
+      </div>`;
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("products")
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+
+    if (error) {
+
+      $("productsList").innerHTML =
+        `<div class="empty">
+          ${escapeHtml(error.message)}
+        </div>`;
+
+      return;
+
+    }
+
+
+    products = data || [];
+
+    renderProducts();
+
+  }
+
+
+  function renderProducts() {
+
+    if (!products.length) {
+
+      $("productsList").innerHTML =
+        `<div class="empty">
+          No products yet.
+        </div>`;
+
+      return;
+
+    }
+
+
+    $("productsList").innerHTML =
+      products
+        .map(product => {
+
+          const image =
+            product.front ||
+            product.back ||
+            "";
+
+
+          const stock =
+            product.stock || {};
+
+
+          const totalStock =
+            Object.values(stock)
+              .reduce(
+                (total, value) =>
+                  total +
+                  (Number(value) || 0),
+                0
+              );
+
+
+          const status =
+            product.available
+              ? "AVAILABLE"
+              : "SOLD OUT";
+
+
+          return `
+
+            <div class="product-row">
+
+              ${
+                image
+                  ? `
+                    <img
+                      class="product-image"
+                      src="${escapeHtml(image)}"
+                    >
+                  `
+                  : `
+                    <div class="product-image"></div>
+                  `
+              }
+
+
+              <div class="product-info">
+
+                <h3>
+                  ${escapeHtml(product.name)}
+                </h3>
+
+                <div class="product-meta">
+
+                  €${Number(
+                    product.price || 0
+                  ).toFixed(2)}
+
+                  ·
+
+                  ${escapeHtml(
+                    product.category
+                  )}
+
+                  ·
+
+                  Stock:
+                  ${totalStock}
+
+                </div>
+
+
+                <span
+                  class="status ${
+                    product.available
+                      ? "available"
+                      : "sold"
+                  }"
+                >
+                  ${status}
+                </span>
+
+              </div>
+
+
+              <div class="product-buttons">
+
+                <button
+                  class="btn btn-dark"
+                  onclick="editProduct(${Number(product.id)})"
+                >
+                  EDIT
+                </button>
+
+                <button
+                  class="btn btn-danger"
+                  onclick="deleteProduct(${Number(product.id)})"
+                >
+                  DELETE
+                </button>
+
+              </div>
+
+            </div>
+
+          `;
+
+        })
+        .join("");
+
+  }
+
+
+  window.editProduct =
+    function(id) {
+
+      const product =
+        products.find(
+          item =>
+            Number(item.id) ===
+            Number(id)
+        );
+
+
+      if (!product) {
+        return;
+      }
+
+
+      editingProduct =
+        product;
+
+
+      $("productId").value =
+        product.id;
+
+      $("productName").value =
+        product.name || "";
+
+      $("productPrice").value =
+        product.price || 0;
+
+      $("productCategory").value =
+        product.category || "tops";
+
+      $("productDrop").value =
+        product.drop ||
+        "Available now";
+
+      $("productDescription").value =
+        product.description || "";
+
+      $("productSizes").value =
+        (
+          product.sizes || []
+        ).join(",");
+
+      $("productAvailable").checked =
+        !!product.available;
+
+
+      $("formTitle").textContent =
+        "Edit Product";
+
+
+      $("saveProductButton").textContent =
+        "UPDATE PRODUCT";
+
+
+      renderStockInputs(
+        product.stock || {}
+      );
+
+
+      $("frontImage").value = "";
+
+      $("backImage").value = "";
+
+
+      previewImages();
+
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    };
+
+
+  window.deleteProduct =
+    async function(id) {
+
+      const product =
+        products.find(
+          item =>
+            Number(item.id) ===
+            Number(id)
+        );
+
+
+      if (!product) {
+        return;
+      }
+
+
+      const confirmed =
+        confirm(
+          `Delete "${product.name}"?`
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("products")
+          .delete()
+          .eq("id", id);
+
+
+      if (error) {
+
+        showMessage(
+          $("adminMessage"),
+          error.message,
+          true
+        );
+
+        return;
+
+      }
+
+
+      showMessage(
+        $("adminMessage"),
+        "Product deleted."
+      );
+
+
+      await loadProducts();
+
+    };
+
+
+  renderStockInputs();
+
+  initialize();
+
+</script>
+
+</body>
+</html>
